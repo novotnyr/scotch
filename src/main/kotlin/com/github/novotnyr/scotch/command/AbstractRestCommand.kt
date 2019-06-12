@@ -8,6 +8,8 @@ import com.github.novotnyr.scotch.http.BasicAuthenticator
 import com.github.novotnyr.scotch.http.InsecureTrustManager
 import com.github.novotnyr.scotch.http.LoggingOkHttpInterceptor
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -16,8 +18,9 @@ import java.net.ConnectException
 import java.security.KeyManagementException
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
-import java.util.concurrent.CompletableFuture
 import javax.net.ssl.SSLContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 
 abstract class AbstractRestCommand<O>(private val rabbitConfiguration: RabbitConfiguration) : Command<O> {
@@ -35,54 +38,51 @@ abstract class AbstractRestCommand<O>(private val rabbitConfiguration: RabbitCon
         return Gson()
     }
 
-    override fun run(): CompletableFuture<O> {
-        val resultFuture = CompletableFuture<O>()
-        var builder: OkHttpClient.Builder = OkHttpClient.Builder()
-                .authenticator(BasicAuthenticator(rabbitConfiguration.user, rabbitConfiguration.password))
-                .followRedirects(false)
-                .addInterceptor(LoggingOkHttpInterceptor())
-        builder = configureTls(builder)
-        val client = builder.build()
+    override suspend fun run(): O {
+        return suspendCancellableCoroutine { continuation ->
+            var builder: OkHttpClient.Builder = OkHttpClient.Builder()
+                    .authenticator(BasicAuthenticator(rabbitConfiguration.user, rabbitConfiguration.password))
+                    .followRedirects(false)
+                    .addInterceptor(LoggingOkHttpInterceptor())
+            builder = configureTls(builder)
+            val client = builder.build()
 
-        val request = buildRequest()
+            val request = buildRequest()
 
-        client.newCall(request).enqueue(object: Callback {
-            override fun onResponse(call: Call, response: Response) {
-                try {
-                    response.body().use { responseBody ->
-                        val responseBodyString = responseBody.string()
-                        if (!response.isSuccessful) {
-                            if (response.code() == 401) {
-                                throw RabbitMqAccessDeniedException("Failed to execute REST API call: Access denied")
-                            } else {
-                                handleFailedResponse(response, responseBodyString)
+            client.newCall(request).enqueue(object : Callback {
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        response.body().use { responseBody ->
+                            val responseBodyString = responseBody.string()
+                            if (!response.isSuccessful) {
+                                if (response.code() == 401) {
+                                    throw RabbitMqAccessDeniedException("Failed to execute REST API call: Access denied")
+                                } else {
+                                    handleFailedResponse(response, responseBodyString)
+                                }
                             }
+                            handleRawJson(responseBodyString)
+                            val result = gson.fromJson<O>(responseBodyString, typeToken)
+                            continuation.resume(result)
                         }
-                        handleRawJson(responseBodyString)
-                        val result = gson.fromJson<Any>(responseBodyString, typeToken)
-                        onComplete()
-                        resultFuture.complete(result as O)
+                    } catch (e: IOException) {
+                        continuation.resumeWithException(RabbitMqAdminException("Failed to execute REST API call", e))
+                    } catch (e: Throwable) {
+                        continuation.resumeWithException(e)
                     }
-                } catch (e: IOException) {
-                    resultFuture.completeExceptionally(RabbitMqAdminException("Failed to execute REST API call", e))
+
                 }
 
-            }
-            override fun onFailure(call: Call, ioException: IOException) {
-                val exception: Exception;
-                when (ioException) {
-                    is ConnectException -> exception = RabbitMqConnectionException(rabbitConfiguration, ioException)
-                    else -> exception = RabbitMqAdminException("Failed to execute REST API call", ioException)
+                override fun onFailure(call: Call, ioException: IOException) {
+                    val exception: Exception
+                    when (ioException) {
+                        is ConnectException -> exception = RabbitMqConnectionException(rabbitConfiguration, ioException)
+                        else -> exception = RabbitMqAdminException("Failed to execute REST API call", ioException)
+                    }
+                    continuation.resumeWithException(exception)
                 }
-                resultFuture.completeExceptionally(exception)
-            }
-        })
-
-        return resultFuture
-    }
-
-    protected fun onComplete() {
-        // do nothing
+            })
+        }
     }
 
     protected open fun handleFailedResponse(response: Response, responseBodyString: String) {
@@ -147,4 +147,5 @@ abstract class AbstractRestCommand<O>(private val rabbitConfiguration: RabbitCon
 
     protected abstract val typeToken : Type
 
+    inline fun <reified O> Gson.fromJson(json: String): O = this.fromJson<O>(json, object: TypeToken<O>() {}.type)
 }
