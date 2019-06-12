@@ -23,7 +23,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-abstract class AbstractRestCommand<O>(private val rabbitConfiguration: RabbitConfiguration) : Command<O> {
+abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: RabbitConfiguration) : Command<O> {
     val logger = LoggerFactory.getLogger(javaClass)
 
     val JSON = MediaType.parse("application/json; charset=utf-8")

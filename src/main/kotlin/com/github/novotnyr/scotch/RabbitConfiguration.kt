@@ -3,10 +3,6 @@ package com.github.novotnyr.scotch
 import com.rabbitmq.client.ConnectionFactory.*
 
 class RabbitConfiguration {
-    val DEFAULT_HTTP_PORT = 15672
-
-    val DEFAULT_HTTPS_PORT = 15671
-
     var host = DEFAULT_HOST
 
     var port = DEFAULT_AMQP_PORT
