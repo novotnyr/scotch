@@ -1,13 +1,11 @@
 package com.github.novotnyr.scotch.command.api
 
-class GetMessageRequest {
-    var count = 1
-
-    var ackMode = AckMode.ACK
-
-    var responseEncoding = Encoding.AUTO
-
-    var payloadSizeLimit: Long = -1
+data class GetMessageRequest(
+        val count: Int = 1,
+        val ackMode: AckMode = AckMode.ACK,
+        val responseEncoding: Encoding = Encoding.AUTO,
+        val payloadSizeLimit: Long = -1
+) {
 
     enum class AckMode(val code: String) {
         ACK_REQUEUE("ack_requeue_true"),
@@ -18,7 +16,7 @@ class GetMessageRequest {
         override fun toString(): String = code
     }
 
-    enum class Encoding private constructor(val code: String) {
+    enum class Encoding(val code: String) {
         AUTO("auto"),
         BASE64("base64");
 
