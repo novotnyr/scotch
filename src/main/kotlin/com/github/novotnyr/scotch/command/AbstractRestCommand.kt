@@ -4,9 +4,8 @@ import com.github.novotnyr.scotch.RabbitConfiguration
 import com.github.novotnyr.scotch.RabbitMqAccessDeniedException
 import com.github.novotnyr.scotch.RabbitMqAdminException
 import com.github.novotnyr.scotch.RabbitMqConnectionException
-import com.github.novotnyr.scotch.http.BasicAuthenticator
-import com.github.novotnyr.scotch.http.InsecureTrustManager
-import com.github.novotnyr.scotch.http.LoggingOkHttpInterceptor
+import com.github.novotnyr.scotch.http.DefaultHttpClientFactory
+import com.github.novotnyr.scotch.http.HttpClientFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -15,15 +14,12 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.reflect.Type
 import java.net.ConnectException
-import java.security.KeyManagementException
-import java.security.NoSuchAlgorithmException
-import java.security.SecureRandom
-import javax.net.ssl.SSLContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: RabbitConfiguration) : Command<O> {
+abstract class AbstractRestCommand<out O>(val rabbitConfiguration: RabbitConfiguration, val httpClientFactory: HttpClientFactory = DefaultHttpClientFactory()) : Command<O> {
+
     val logger = LoggerFactory.getLogger(javaClass)
 
     val JSON = MediaType.parse("application/json; charset=utf-8")
@@ -34,22 +30,16 @@ abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: Rabbi
         this.gson = buildGson()
     }
 
-    protected fun buildGson(): Gson {
-        return Gson()
-    }
+    protected fun buildGson(): Gson = Gson()
+
+    protected val httpClient
+        get() = httpClientFactory.getClient(rabbitConfiguration)
 
     override suspend fun run(): O {
         return suspendCancellableCoroutine { continuation ->
-            var builder: OkHttpClient.Builder = OkHttpClient.Builder()
-                .authenticator(BasicAuthenticator(rabbitConfiguration.user, rabbitConfiguration.password))
-                .followRedirects(false)
-                .addInterceptor(LoggingOkHttpInterceptor())
-            builder = configureTls(builder)
-            val client = builder.build()
-
             val request = buildRequest()
 
-            client.newCall(request).enqueue(object : Callback {
+            httpClient.newCall(request).enqueue(object : Callback {
                 override fun onResponse(call: Call, response: Response) {
                     try {
                         response.body().use { responseBody ->
@@ -95,27 +85,6 @@ abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: Rabbi
         }
     }
 
-    protected open fun configureTls(builder: OkHttpClient.Builder): OkHttpClient.Builder {
-        if (!this.rabbitConfiguration.isAllowingInsecureTls) {
-            return builder
-        }
-
-        try {
-            val sslContext = SSLContext.getInstance("SSL")
-            sslContext.init(null, InsecureTrustManager.asList(), SecureRandom())
-            val sslSocketFactory = sslContext.socketFactory
-
-            builder.sslSocketFactory(sslSocketFactory)
-            builder.hostnameVerifier { s, sslSession -> true }
-
-            return builder
-        } catch (e: NoSuchAlgorithmException) {
-            throw RabbitMqConnectionException("Cannot create insecure HTTP client: " + e.message, e)
-        } catch (e: KeyManagementException) {
-            throw RabbitMqConnectionException("Cannot create insecure HTTP client: " + e.message, e)
-        }
-    }
-
     protected open fun buildRequest(): Request {
         return Request.Builder()
             .url(url)
@@ -128,7 +97,7 @@ abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: Rabbi
 
     protected abstract val urlSuffix: String
 
-    private val baseUrl : String
+    private val baseUrl: String
         get() = "$protocol://${rabbitConfiguration.host}:${rabbitConfiguration.port}/api"
 
     private val protocol: String

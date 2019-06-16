@@ -4,6 +4,7 @@ import com.github.novotnyr.scotch.QueueOrVirtualHostNotFoundException
 import com.github.novotnyr.scotch.RabbitConfiguration
 import com.github.novotnyr.scotch.command.api.GetMessageRequest
 import com.github.novotnyr.scotch.domain.RetrievedMessage
+import com.github.novotnyr.scotch.http.HttpClientFactory
 import com.github.novotnyr.scotch.http.UrlEncoder
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
@@ -12,8 +13,19 @@ import okhttp3.RequestBody
 import okhttp3.Response
 import java.lang.reflect.Type
 
-class GetMessage(val queue: String, rabbitConfiguration: RabbitConfiguration) :
-    AbstractScriptableCommand<List<RetrievedMessage>>(rabbitConfiguration) {
+class GetMessage : AbstractScriptableCommand<List<RetrievedMessage>> {
+    constructor(queue: String, rabbitConfiguration: RabbitConfiguration, httpClientFactory: HttpClientFactory) : super(
+        rabbitConfiguration,
+        httpClientFactory
+    ) {
+        this.queue = queue;
+    }
+
+    constructor(queue: String, rabbitConfiguration: RabbitConfiguration) : super(rabbitConfiguration) {
+        this.queue = queue;
+    }
+
+    private var queue: String
 
     override val urlSuffix: String
         get() = "/queues/" + UrlEncoder.encode(virtualHost) + "/" + this.queue + "/get"

@@ -6,6 +6,7 @@ import com.github.novotnyr.scotch.RabbitConfiguration
 import com.github.novotnyr.scotch.command.api.ErrorResponse
 import com.github.novotnyr.scotch.command.api.PublishToExchangeRequest
 import com.github.novotnyr.scotch.command.api.PublishToExchangeResponse
+import com.github.novotnyr.scotch.http.HttpClientFactory
 import com.github.novotnyr.scotch.http.UrlEncoder
 import com.google.gson.reflect.TypeToken
 import okhttp3.Request
@@ -16,8 +17,13 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
-class PublishToExchange(rabbitConfiguration: RabbitConfiguration) :
-    AbstractScriptableCommand<PublishToExchangeResponse>(rabbitConfiguration) {
+class PublishToExchange : AbstractScriptableCommand<PublishToExchangeResponse> {
+    constructor(rabbitConfiguration: RabbitConfiguration) : super(rabbitConfiguration)
+
+    constructor(rabbitConfiguration: RabbitConfiguration, httpClientFactory: HttpClientFactory) : super(
+        rabbitConfiguration,
+        httpClientFactory
+    )
 
     var exchange = "amq.default"
 
