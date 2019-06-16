@@ -23,5 +23,5 @@ fun main(args: Array<String>): Unit = runBlocking{
         val messages = GetMessage("reply", config).run()
         println(messages)
     }
-    clientFactory.getClient(configuration).dispatcher().executorService().shutdown();
+    clientFactory.getClient(configuration).dispatcher().executorService().shutdown()
 }
