@@ -16,7 +16,8 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
-class PublishToExchange(rabbitConfiguration: RabbitConfiguration) : AbstractScriptableCommand<PublishToExchangeResponse>(rabbitConfiguration) {
+class PublishToExchange(rabbitConfiguration: RabbitConfiguration) :
+    AbstractScriptableCommand<PublishToExchangeResponse>(rabbitConfiguration) {
 
     var exchange = "amq.default"
 
@@ -54,9 +55,9 @@ class PublishToExchange(rabbitConfiguration: RabbitConfiguration) : AbstractScri
 
     override fun buildRequest(): Request {
         return Request.Builder()
-                .url(resolveUrl())
-                .post(requestBody)
-                .build()
+            .url(resolveUrl())
+            .post(requestBody)
+            .build()
     }
 
     override fun handleFailedResponse(response: Response, responseBodyString: String) {

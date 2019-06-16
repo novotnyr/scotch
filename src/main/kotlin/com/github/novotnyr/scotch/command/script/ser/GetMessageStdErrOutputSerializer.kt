@@ -5,7 +5,8 @@ import com.github.novotnyr.scotch.command.script.ScriptOutputSerializer
 import com.github.novotnyr.scotch.command.script.StdErr
 import com.github.novotnyr.scotch.domain.RetrievedMessage
 
-class GetMessageStdErrOutputSerializer(val stdErr: StdErr) : ScriptOutputSerializer<GetMessage, List<RetrievedMessage>> {
+class GetMessageStdErrOutputSerializer(val stdErr: StdErr) :
+    ScriptOutputSerializer<GetMessage, List<RetrievedMessage>> {
 
     override fun serialize(command: GetMessage, output: List<RetrievedMessage>) {
         for (message in output) {

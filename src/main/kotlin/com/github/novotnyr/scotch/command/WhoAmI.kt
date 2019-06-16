@@ -15,7 +15,7 @@ class WhoAmI(rabbitConfiguration: RabbitConfiguration) : AbstractRestCommand<Aut
     override val typeToken: Type
         get() = TYPE_TOKEN
 
-    override val urlSuffix : String
+    override val urlSuffix: String
         get() = "/whoami"
 
     companion object {

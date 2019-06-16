@@ -1,10 +1,10 @@
 package com.github.novotnyr.scotch.command.api
 
 data class GetMessageRequest(
-        val count: Int = 1,
-        val ackMode: AckMode = AckMode.ACK,
-        val responseEncoding: Encoding = Encoding.AUTO,
-        val payloadSizeLimit: Long = -1
+    val count: Int = 1,
+    val ackMode: AckMode = AckMode.ACK,
+    val responseEncoding: Encoding = Encoding.AUTO,
+    val payloadSizeLimit: Long = -1
 ) {
 
     enum class AckMode(val code: String) {

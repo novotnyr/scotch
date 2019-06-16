@@ -12,9 +12,10 @@ import okhttp3.RequestBody
 import okhttp3.Response
 import java.lang.reflect.Type
 
-class GetMessage(val queue: String, rabbitConfiguration: RabbitConfiguration) : AbstractScriptableCommand<List<RetrievedMessage>>(rabbitConfiguration) {
+class GetMessage(val queue: String, rabbitConfiguration: RabbitConfiguration) :
+    AbstractScriptableCommand<List<RetrievedMessage>>(rabbitConfiguration) {
 
-    override val urlSuffix : String
+    override val urlSuffix: String
         get() = "/queues/" + UrlEncoder.encode(virtualHost) + "/" + this.queue + "/get"
 
     private fun requestBody(): RequestBody {
@@ -35,9 +36,9 @@ class GetMessage(val queue: String, rabbitConfiguration: RabbitConfiguration) : 
 
     override fun buildRequest(): Request {
         return Request.Builder()
-                .url(resolveUrl())
-                .post(requestBody())
-                .build()
+            .url(resolveUrl())
+            .post(requestBody())
+            .build()
     }
 
     override fun handleFailedResponse(response: Response, responseBodyString: String) {

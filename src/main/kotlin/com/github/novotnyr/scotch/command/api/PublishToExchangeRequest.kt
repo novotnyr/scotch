@@ -26,7 +26,7 @@ class PublishToExchangeRequest {
             field = value
         }
 
-    var headers : Map<String, String> = LinkedHashMap()
+    var headers: Map<String, String> = LinkedHashMap()
         set(value) {
             this.properties.headers = value
             field = value

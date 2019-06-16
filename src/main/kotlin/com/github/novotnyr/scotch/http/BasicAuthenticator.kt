@@ -13,9 +13,9 @@ class BasicAuthenticator(private val user: String, private val password: String)
 
         val credential = Credentials.basic(this.user, this.password)
         return response
-                .request().newBuilder()
-                .header("Authorization", credential)
-                .build()
+            .request().newBuilder()
+            .header("Authorization", credential)
+            .build()
     }
 
 }

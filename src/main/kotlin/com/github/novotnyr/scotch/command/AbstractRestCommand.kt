@@ -34,16 +34,16 @@ abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: Rabbi
         this.gson = buildGson()
     }
 
-    protected fun buildGson() : Gson {
+    protected fun buildGson(): Gson {
         return Gson()
     }
 
     override suspend fun run(): O {
         return suspendCancellableCoroutine { continuation ->
             var builder: OkHttpClient.Builder = OkHttpClient.Builder()
-                    .authenticator(BasicAuthenticator(rabbitConfiguration.user, rabbitConfiguration.password))
-                    .followRedirects(false)
-                    .addInterceptor(LoggingOkHttpInterceptor())
+                .authenticator(BasicAuthenticator(rabbitConfiguration.user, rabbitConfiguration.password))
+                .followRedirects(false)
+                .addInterceptor(LoggingOkHttpInterceptor())
             builder = configureTls(builder)
             val client = builder.build()
 
@@ -118,34 +118,34 @@ abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: Rabbi
 
     protected open fun buildRequest(): Request {
         return Request.Builder()
-                .url(resolveUrl())
-                .get()
-                .build()
+            .url(resolveUrl())
+            .get()
+            .build()
     }
 
     protected open fun resolveUrl(): String {
         return getBaseUrl().append(urlSuffix).toString()
     }
 
-    protected abstract val urlSuffix : String
+    protected abstract val urlSuffix: String
 
     protected open fun getBaseUrl(): StringBuilder {
         return StringBuilder()
-                .append(getProtocol())
-                .append("://")
-                .append(rabbitConfiguration.host)
-                .append(":")
-                .append(rabbitConfiguration.port)
-                .append("/api")
+            .append(getProtocol())
+            .append("://")
+            .append(rabbitConfiguration.host)
+            .append(":")
+            .append(rabbitConfiguration.port)
+            .append("/api")
     }
 
     protected fun getProtocol(): String {
         return rabbitConfiguration.protocol.name.toLowerCase()
     }
 
-    open val virtualHost : String get() = rabbitConfiguration.virtualHost
+    open val virtualHost: String get() = rabbitConfiguration.virtualHost
 
-    protected abstract val typeToken : Type
+    protected abstract val typeToken: Type
 
-    inline fun <reified O> Gson.fromJson(json: String): O = this.fromJson<O>(json, object: TypeToken<O>() {}.type)
+    inline fun <reified O> Gson.fromJson(json: String): O = this.fromJson<O>(json, object : TypeToken<O>() {}.type)
 }

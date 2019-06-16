@@ -98,7 +98,10 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration?) {
         }
     }
 
-    private fun parsePublishToExchange(rabbitConfiguration: RabbitConfiguration, script: Map<String, Any>): PublishToExchange {
+    private fun parsePublishToExchange(
+        rabbitConfiguration: RabbitConfiguration,
+        script: Map<String, Any>
+    ): PublishToExchange {
         val command = PublishToExchange(rabbitConfiguration)
         parseDescription(command, script)
         command.routingKey = script["routing-key"] as String
@@ -118,7 +121,7 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration?) {
                 val stringHeaders = LinkedHashMap<String, String>()
 
                 headers
-                        .forEach { (k, v) -> stringHeaders[k.toString()] = Objects.toString(v) }
+                    .forEach { (k, v) -> stringHeaders[k.toString()] = Objects.toString(v) }
                 command.headers = stringHeaders
             }
         }
@@ -140,7 +143,10 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration?) {
         return command
     }
 
-    fun <C : Command<O>, O> setOutputSerializer(commandClass: Class<C>, outputSerializer: ScriptOutputSerializer<C, O>) {
+    fun <C : Command<O>, O> setOutputSerializer(
+        commandClass: Class<C>,
+        outputSerializer: ScriptOutputSerializer<C, O>
+    ) {
         this.outputSerializers[commandClass] = outputSerializer
     }
 
