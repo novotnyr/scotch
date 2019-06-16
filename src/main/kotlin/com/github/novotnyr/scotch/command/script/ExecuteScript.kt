@@ -10,12 +10,10 @@ import java.io.FileNotFoundException
 import java.io.FileReader
 import java.util.*
 
-class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration?) {
+class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null, var scriptFile: String) {
     var stdErr: StdErr = SystemErr()
 
     var rabbitConfigurationParser = RabbitConfigurationParser()
-
-    var scriptFile: String? = null
 
     var excludedCommandIndices: List<Int> = ArrayList()
 
@@ -29,7 +27,7 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration?) {
     suspend fun run() {
         try {
             val yaml = Yaml()
-            val documents = yaml.loadAll(FileReader(this.scriptFile!!)) as Iterable<Any>
+            val documents = yaml.loadAll(FileReader(this.scriptFile)) as Iterable<Any>
             val iterator = documents.iterator()
             val rabbitConfiguration: RabbitConfiguration
             val configuration = iterator.next() as Map<String, Any>
@@ -49,13 +47,13 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration?) {
                     val getMessage = parseGetMessage(rabbitConfiguration, scriptDocument)
                     script.append(getMessage)
                 } else {
-                    stdErr.println("Unsupported command type in " + this.scriptFile!!)
+                    stdErr.println("Unsupported command type in " + this.scriptFile)
                 }
             }
             validate(script)
             doRun(script)
         } catch (e: FileNotFoundException) {
-            stdErr.println("Cannot find script " + this.scriptFile!!)
+            stdErr.println("Cannot find script " + this.scriptFile)
         }
 
     }
