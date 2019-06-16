@@ -2,7 +2,6 @@ package com.github.novotnyr.scotch.command
 
 import com.github.novotnyr.scotch.RabbitConfiguration
 import com.github.novotnyr.scotch.domain.AuthenticatedUser
-import com.github.novotnyr.scotch.http.HttpClientFactory
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
@@ -12,13 +11,8 @@ import java.lang.reflect.Type
  *     This works for RabbitMQ 3.7 and newer.
  * </p>
  */
-class WhoAmI : AbstractScriptableCommand<AuthenticatedUser> {
-    constructor(rabbitConfiguration: RabbitConfiguration, httpClientFactory: HttpClientFactory) : super(
-        rabbitConfiguration,
-        httpClientFactory
-    )
-
-    constructor(rabbitConfiguration: RabbitConfiguration) : super(rabbitConfiguration)
+class WhoAmI(configuration: RabbitConfiguration) :
+    AbstractScriptableCommand<AuthenticatedUser>(configuration) {
 
     override val typeToken: Type
         get() = TYPE_TOKEN

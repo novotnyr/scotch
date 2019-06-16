@@ -18,7 +18,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-abstract class AbstractRestCommand<out O>(val rabbitConfiguration: RabbitConfiguration, val httpClientFactory: HttpClientFactory = DefaultHttpClientFactory()) : Command<O> {
+abstract class AbstractRestCommand<out O>(val rabbitConfiguration: RabbitConfiguration) : Command<O> {
 
     val logger = LoggerFactory.getLogger(javaClass)
 
@@ -31,6 +31,8 @@ abstract class AbstractRestCommand<out O>(val rabbitConfiguration: RabbitConfigu
     }
 
     protected fun buildGson(): Gson = Gson()
+
+    var httpClientFactory: HttpClientFactory = DefaultHttpClientFactory()
 
     protected val httpClient
         get() = httpClientFactory.getClient(rabbitConfiguration)

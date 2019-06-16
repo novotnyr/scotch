@@ -6,11 +6,12 @@ import com.github.novotnyr.scotch.http.SingletonHttpClientFactory
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>): Unit = runBlocking{
-    val rabbitConfiguration = RabbitConfiguration(port = RabbitConfiguration.DEFAULT_HTTP_PORT)
-    val httpClientFactory = SingletonHttpClientFactory()
+    val configuration = RabbitConfiguration(port = RabbitConfiguration.DEFAULT_HTTP_PORT)
+    val clientFactory = SingletonHttpClientFactory()
 
     if (args[0] == "publish") {
-        val confirmation = PublishToExchange(rabbitConfiguration, httpClientFactory).run {
+        val confirmation = PublishToExchange(configuration).run {
+            httpClientFactory = clientFactory
             routingKey = "cabbage"
             headers = mapOf("id" to "1")
             encodeAndSetUtf8Contents("Hello")
@@ -19,8 +20,8 @@ fun main(args: Array<String>): Unit = runBlocking{
         println(if(confirmation.isRouted) "yes" else "no")
     } else if (args[0] == "get") {
         val config = RabbitConfiguration(port = RabbitConfiguration.DEFAULT_HTTP_PORT)
-        val messages = GetMessage("reply", config, httpClientFactory).run()
+        val messages = GetMessage("reply", config).run()
         println(messages)
     }
-    httpClientFactory.getClient(rabbitConfiguration).dispatcher().executorService().shutdown();
+    clientFactory.getClient(configuration).dispatcher().executorService().shutdown();
 }

@@ -6,7 +6,6 @@ import com.github.novotnyr.scotch.RabbitConfiguration
 import com.github.novotnyr.scotch.command.api.ErrorResponse
 import com.github.novotnyr.scotch.command.api.PublishToExchangeRequest
 import com.github.novotnyr.scotch.command.api.PublishToExchangeResponse
-import com.github.novotnyr.scotch.http.HttpClientFactory
 import com.github.novotnyr.scotch.http.UrlEncoder
 import com.google.gson.reflect.TypeToken
 import okhttp3.Request
@@ -17,25 +16,16 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
-class PublishToExchange : AbstractScriptableCommand<PublishToExchangeResponse> {
-    constructor(rabbitConfiguration: RabbitConfiguration) : super(rabbitConfiguration)
-
-    constructor(rabbitConfiguration: RabbitConfiguration, httpClientFactory: HttpClientFactory) : super(
-        rabbitConfiguration,
-        httpClientFactory
-    )
-
-    var exchange = "amq.default"
-
-    var routingKey: String? = null
-
-    var base64Contents: String? = null
-
-    var contentType: String? = null
-
-    var replyTo: String? = null
-
+class PublishToExchange(
+    configuration: RabbitConfiguration,
+    var exchange: String = "amq.default",
+    var routingKey: String? = null,
+    var base64Contents: String? = null,
+    var contentType: String? = null,
+    var replyTo: String? = null,
     var headers: Map<String, String> = LinkedHashMap()
+) :
+    AbstractScriptableCommand<PublishToExchangeResponse>(configuration) {
 
     override val urlSuffix: String
         get() = "/exchanges/" + UrlEncoder.encode(virtualHost) + "/" + this.exchange + "/publish"
