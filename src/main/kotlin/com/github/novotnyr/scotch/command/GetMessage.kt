@@ -36,7 +36,7 @@ class GetMessage(val queue: String, rabbitConfiguration: RabbitConfiguration) :
 
     override fun buildRequest(): Request {
         return Request.Builder()
-            .url(resolveUrl())
+            .url(url)
             .post(requestBody())
             .build()
     }

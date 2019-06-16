@@ -118,32 +118,24 @@ abstract class AbstractRestCommand<out O>(private val rabbitConfiguration: Rabbi
 
     protected open fun buildRequest(): Request {
         return Request.Builder()
-            .url(resolveUrl())
+            .url(url)
             .get()
             .build()
     }
 
-    protected open fun resolveUrl(): String {
-        return getBaseUrl().append(urlSuffix).toString()
-    }
+    protected open val url: String
+        get() = baseUrl + urlSuffix
 
     protected abstract val urlSuffix: String
 
-    protected open fun getBaseUrl(): StringBuilder {
-        return StringBuilder()
-            .append(getProtocol())
-            .append("://")
-            .append(rabbitConfiguration.host)
-            .append(":")
-            .append(rabbitConfiguration.port)
-            .append("/api")
-    }
+    private val baseUrl : String
+        get() = "$protocol://${rabbitConfiguration.host}:${rabbitConfiguration.port}/api"
 
-    protected fun getProtocol(): String {
-        return rabbitConfiguration.protocol.name.toLowerCase()
-    }
+    private val protocol: String
+        get() = rabbitConfiguration.protocol.name.toLowerCase()
 
-    open val virtualHost: String get() = rabbitConfiguration.virtualHost
+    protected val virtualHost: String
+        get() = rabbitConfiguration.virtualHost
 
     protected abstract val typeToken: Type
 
