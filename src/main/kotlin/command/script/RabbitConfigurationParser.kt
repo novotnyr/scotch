@@ -15,7 +15,6 @@ class RabbitConfigurationParser {
         configuration.protocol = parseProtocol(configurationMap)
         deducePortFromProtocol(configuration, configurationMap)
         parseValue(configurationMap, "host")?.let { configuration.host = it }
-        parseValue(configurationMap, "host")?.let { configuration.host = it }
         parseValue(configurationMap, "user")?.let { configuration.user = it }
         parseValue(configurationMap, "password")?.let { configuration.password = it }
         parseValue(configurationMap, "vhost")?.let { configuration.virtualHost = it }
