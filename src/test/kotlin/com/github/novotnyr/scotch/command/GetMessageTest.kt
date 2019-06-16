@@ -10,9 +10,6 @@ class GetMessageTest {
     @Test
     fun testFailedConnection() = runBlocking {
         val configuration = RabbitConfiguration()
-        configuration.user = ("guest")
-        configuration.password = ("guest")
-        configuration.virtualHost = ("/")
 
         try {
             GetMessage("cabbage", configuration).run()
@@ -28,12 +25,7 @@ class GetMessageTest {
 
     @Test
     fun successfulConnection() = runBlocking {
-        val configuration = RabbitConfiguration()
-        configuration.user = ("guest")
-        configuration.password = ("guest")
-        configuration.virtualHost = ("/")
-        configuration.port = 15672
-
+        val configuration = RabbitConfiguration(port = 15672)
         val messages = GetMessage("cabbage", configuration).run()
         print(messages)
     }
