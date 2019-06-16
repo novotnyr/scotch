@@ -4,7 +4,7 @@ import com.rabbitmq.client.ConnectionFactory.*
 
 data class RabbitConfiguration(
     var host: String = DEFAULT_HOST,
-    var port: Int = DEFAULT_AMQP_PORT,
+    var port: Int = DEFAULT_HTTP_PORT,
     var virtualHost: String = "/",
     var user: String = DEFAULT_USER,
     var password: String = DEFAULT_PASS,

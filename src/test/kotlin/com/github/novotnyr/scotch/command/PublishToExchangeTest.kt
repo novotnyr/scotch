@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class PublishToExchangeTest {
     @Test
     fun publishToExchangeWithMissingRoutingKey() = runBlocking {
-        val configuration = RabbitConfiguration(port = RabbitConfiguration.DEFAULT_HTTP_PORT)
+        val configuration = RabbitConfiguration()
         try {
             PublishToExchange(configuration).run()
         } catch (e: MissingMandatoryFieldException) {
@@ -20,7 +20,7 @@ class PublishToExchangeTest {
 
     @Test
     fun publishToExchangeWithMissingPayload() = runBlocking {
-        val configuration = RabbitConfiguration(port = RabbitConfiguration.DEFAULT_HTTP_PORT)
+        val configuration = RabbitConfiguration()
         try {
             val command = PublishToExchange(configuration)
             command.routingKey = "cabbage"

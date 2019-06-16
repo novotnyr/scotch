@@ -25,7 +25,7 @@ class GetMessageTest {
 
     @Test
     fun successfulConnection() = runBlocking {
-        val configuration = RabbitConfiguration(port = 15672)
+        val configuration = RabbitConfiguration()
         val messages = GetMessage("cabbage", configuration).run()
         print(messages)
     }
