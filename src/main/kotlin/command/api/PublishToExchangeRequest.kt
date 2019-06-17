@@ -10,21 +10,18 @@ class PublishToExchangeRequest(
 ) {
 
     var contentType: String? = null
-        set(value) {
-            value?.let { this.properties.copy(contentType = it) }
-            field = value
+        set(contentType) {
+            field = contentType?.also { properties = properties.copy(contentType = it) }
         }
 
     var replyTo: String? = null
-        set(value) {
-            value?.let { this.properties.copy(replyTo = it) }
-            field = value
+        set(replyTo) {
+            field = replyTo?.also { properties = properties.copy(replyTo = it) }
         }
 
     var headers: Map<String, String> = emptyMap()
-        set(value) {
-            this.properties.copy(headers = this.properties.headers)
-            field = value
+        set(headers) {
+            field = headers.also { properties = properties.copy(headers = it) }
         }
 
     data class Properties(
