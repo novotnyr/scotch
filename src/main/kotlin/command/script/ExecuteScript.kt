@@ -30,16 +30,27 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
             val documents = yaml.loadAll(FileReader(this.scriptFile)) as Iterable<Any>
             val iterator = documents.iterator()
             val rabbitConfiguration: RabbitConfiguration
-            val configuration = iterator.next() as Map<String, Any>
             if (this.rabbitConfiguration != null) {
                 rabbitConfiguration = this.rabbitConfiguration
             } else {
+                val configuration = iterator.next() as? Map<String, Any>
+                if (configuration == null) {
+                    stdErr.println("No RabbitMQ configuration found: please provide one " +
+                            "or use explicit configuration in the script file")
+                    return
+                }
                 rabbitConfiguration = this.rabbitConfigurationParser.parseConfiguration(configuration)
             }
             val script = Script(rabbitConfiguration)
 
             while (iterator.hasNext()) {
-                val scriptDocument = iterator.next() as Map<String, Any>
+                val scriptDocumentObject = iterator.next()
+                @Suppress("SENSELESS_COMPARISON")
+                if (scriptDocumentObject == null) {
+                    // usually when script contains three dashes (---) on the last line
+                    continue
+                }
+                val scriptDocument = scriptDocumentObject as Map<String, Any>
                 if (scriptDocument.containsKey("publish")) {
                     val publishToExchange = parsePublishToExchange(rabbitConfiguration, scriptDocument)
                     script.append(publishToExchange)

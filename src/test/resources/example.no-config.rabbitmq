@@ -1,0 +1,9 @@
+---
+---
+publish: amq.default
+routing-key: cabbate
+json: >
+  {
+      "amount": 1,
+  }
+reply-to: reply
