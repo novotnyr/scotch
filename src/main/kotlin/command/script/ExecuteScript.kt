@@ -57,6 +57,8 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
                 } else if (scriptDocument.containsKey("get")) {
                     val getMessage = parseGetMessage(rabbitConfiguration, scriptDocument)
                     script.append(getMessage)
+                } else if (scriptDocument.containsKey("host")) {
+                    // corresponds to configuration element in the beginning of the document
                 } else {
                     stdErr.println("Unsupported command type in " + this.scriptFile)
                 }
