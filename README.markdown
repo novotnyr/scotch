@@ -49,3 +49,8 @@ publishToExchange.encodeAndSetUtf8Contents("Hello")
 val confirmation = publishToExchange.run()
 println(if(confirmation.isRouted) "yes" else "no")
 ```
+
+`ListExchanges`
+------------
+Lists all available exchanges. Optionally, limit exchanges
+to a specified vhost.

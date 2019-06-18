@@ -1,0 +1,11 @@
+---
+host: localhost
+user: guest
+password: guest
+protocol: http
+vhost: /
+---
+exchanges:
+---
+exchanges:
+  vhost: /

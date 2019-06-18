@@ -1,10 +1,7 @@
 package com.github.novotnyr.scotch.command.script
 
 import com.github.novotnyr.scotch.RabbitConfiguration
-import com.github.novotnyr.scotch.command.AbstractScriptableCommand
-import com.github.novotnyr.scotch.command.Command
-import com.github.novotnyr.scotch.command.GetMessage
-import com.github.novotnyr.scotch.command.PublishToExchange
+import com.github.novotnyr.scotch.command.*
 import org.yaml.snakeyaml.Yaml
 import java.io.FileNotFoundException
 import java.io.FileReader
@@ -57,6 +54,15 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
                 } else if (scriptDocument.containsKey("get")) {
                     val getMessage = parseGetMessage(rabbitConfiguration, scriptDocument)
                     script.append(getMessage)
+                } else if (scriptDocument.containsKey("exchanges")) {
+                    val params = scriptDocument["exchanges"]
+                    val typedParams = if (params is Map<*, *>) {
+                        params as Map<String, Any>
+                    } else {
+                        emptyMap()
+                    }
+                    val listExchanges: ListExchanges = parseListExchanges(rabbitConfiguration, typedParams)
+                    script.append(listExchanges)
                 } else if (scriptDocument.containsKey("host")) {
                     // corresponds to configuration element in the beginning of the document
                 } else {
@@ -145,6 +151,10 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
         parseDescription(command, script)
         return command
     }
+
+    private fun parseListExchanges(rabbitConfiguration: RabbitConfiguration, scriptDocument: Map<String, Any>)
+            = ListExchanges(rabbitConfiguration, scriptDocument.getOrDefault("vhost", "") as String)
+                .also { parseDescription(it, scriptDocument) }
 
     private fun <C : AbstractScriptableCommand<O>, O> parseDescription(command: C, script: Map<String, Any>): C {
         val description = script["description"]
