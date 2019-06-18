@@ -82,5 +82,10 @@ class ExecuteScriptTest {
         assertTrue(exchanges.get().isNotEmpty())
     }
 
-
+    @Test
+    fun testDeclareBinding() = runBlocking {
+        val rabbitConfiguration = RabbitConfiguration()
+        val executeScript = ExecuteScript(rabbitConfiguration, scriptFile = "src/test/resources/example.declare-binding.rabbitmq")
+        executeScript.run()
+    }
 }

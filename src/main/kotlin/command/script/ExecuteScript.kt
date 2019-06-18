@@ -1,5 +1,6 @@
 package com.github.novotnyr.scotch.command.script
 
+import com.github.novotnyr.scotch.MissingMandatoryFieldException
 import com.github.novotnyr.scotch.RabbitConfiguration
 import com.github.novotnyr.scotch.command.*
 import org.yaml.snakeyaml.Yaml
@@ -63,6 +64,9 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
                     }
                     val listExchanges: ListExchanges = parseListExchanges(rabbitConfiguration, typedParams)
                     script.append(listExchanges)
+                } else if (scriptDocument.containsKey("binding")) {
+                    val command = parseDeclareBinding(rabbitConfiguration, safeGetMap(scriptDocument, "binding"))
+                    script.append(command)
                 } else if (scriptDocument.containsKey("host")) {
                     // corresponds to configuration element in the beginning of the document
                 } else {
@@ -74,7 +78,6 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
         } catch (e: FileNotFoundException) {
             stdErr.println("Cannot find script " + this.scriptFile)
         }
-
     }
 
     private fun validate(script: Script): Boolean {
@@ -156,12 +159,35 @@ class ExecuteScript(private val rabbitConfiguration: RabbitConfiguration? = null
             = ListExchanges(rabbitConfiguration, scriptDocument.getOrDefault("vhost", "") as String)
                 .also { parseDescription(it, scriptDocument) }
 
+    private fun parseDeclareBinding(rabbitConfiguration: RabbitConfiguration, script: Map<String, Any>): DeclareBinding {
+        val exchange = script.require("exchange")
+        val queue = script.require("queue")
+        val routingKey = script.require("routing-key")
+        return DeclareBinding(rabbitConfiguration, exchange, queue, routingKey)
+            .also { parseDescription(it, script) }
+    }
+
     private fun <C : AbstractScriptableCommand<O>, O> parseDescription(command: C, script: Map<String, Any>): C {
         val description = script["description"]
         if (description is String) {
             command.description = description
         }
         return command
+    }
+
+    private fun Map<String, Any>.require(key: String): String {
+        return this[key] as? String ?: throw MissingMandatoryFieldException("Field '$key' is required")
+    }
+
+    private fun safeGetMap(map: Map<String, Any>, key: String): Map<String, Any> {
+        val params = map[key]
+        @Suppress("UNCHECKED_CAST")
+        val typedParams = if (params is Map<*, *>) {
+            params as Map<String, Any>
+        } else {
+            emptyMap()
+        }
+        return typedParams;
     }
 
     fun <C : Command<O>, O> setOutputSerializer(

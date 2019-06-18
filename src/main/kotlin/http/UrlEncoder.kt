@@ -13,3 +13,6 @@ object UrlEncoder {
         }
     }
 }
+
+val String.urlEncoded: String
+    get() = UrlEncoder.encode(this)
